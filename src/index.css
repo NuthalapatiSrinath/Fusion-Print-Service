@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-body text-navy antialiased bg-white;
+  }
+
+  ::selection {
+    @apply bg-brand-orange/30 text-navy;
+  }
+}
+
+@layer utilities {
+  .hero-wave {
+    background: radial-gradient(ellipse at 70% 40%, #243556 0%, #1a2a47 45%, #0f1a2e 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
