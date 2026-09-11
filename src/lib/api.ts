@@ -144,6 +144,22 @@ export type PrintJobRow = {
   createdAt?: string;
 };
 
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+export const DEFAULT_SITE_SETTINGS: SiteSettings = {
+  heroTagline: "Your One-Stop Print & Digital Hub",
+  heroHeadline: "FUSION",
+  heroSubline:
+    "Print. Design. Deliver. Custom apparel, QR print, and digital services in Macherla, Armoor.",
+  phone: "9494197969",
+  whatsapp: "7995572200",
+  email: "fusionprintservices@gmail.com",
+  address: "Macherla, Armoor, Nizamabad",
+  featuredProductIds: [],
+};
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -159,20 +175,44 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return data as T;
 }
 
+async function publicGet<T>(path: string, fallback: T): Promise<T> {
+  try {
+    return await request<T>(path);
+  } catch {
+    return fallback;
+  }
+}
+
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` };
 }
 
 export const api = {
   health: () => request<{ status: string }>("/api/health"),
-  products: (featured?: boolean) =>
-    request<{ products: Product[]; addons: Addon[]; packages: Package[] }>(
-      `/api/products${featured ? "?featured=1" : ""}`
-    ),
+  products: async (featured?: boolean) => {
+    const data = await publicGet<Partial<{ products: Product[]; addons: Addon[]; packages: Package[] }>>(
+      `/api/products${featured ? "?featured=1" : ""}`,
+      {}
+    );
+    return {
+      products: asArray<Product>(data.products),
+      addons: asArray<Addon>(data.addons),
+      packages: asArray<Package>(data.packages),
+    };
+  },
   product: (id: string) => request<Product>(`/api/products/${id}`),
-  services: () => request<{ services: Service[] }>("/api/products/services"),
-  business: () => request<BusinessInfo>("/api/products/business"),
-  settings: () => request<{ settings: SiteSettings }>("/api/orders/settings/public"),
+  services: async () => {
+    const data = await publicGet<Partial<{ services: Service[] }>>("/api/products/services", {});
+    return { services: asArray<Service>(data.services) };
+  },
+  business: () => publicGet<BusinessInfo | null>("/api/products/business", null),
+  settings: async () => {
+    const data = await publicGet<Partial<{ settings: SiteSettings }>>(
+      "/api/orders/settings/public",
+      {}
+    );
+    return { settings: data.settings ?? DEFAULT_SITE_SETTINGS };
+  },
   quote: (body: {
     productId: string;
     quantity: number;
@@ -191,8 +231,15 @@ export const api = {
       body: form,
     });
   },
-  shopByCode: (code: string) => request<{ shop: ShopPublic }>(`/api/shops/code/${code}`),
-  printServices: () => request<{ services: PrintService[] }>("/api/print-jobs/services"),
+  shopByCode: (code: string) =>
+    publicGet<{ shop: ShopPublic | null }>(`/api/shops/code/${code}`, { shop: null }),
+  printServices: async () => {
+    const data = await publicGet<Partial<{ services: PrintService[] }>>(
+      "/api/print-jobs/services",
+      {}
+    );
+    return { services: asArray<PrintService>(data.services) };
+  },
   submitPrintJob: async (form: FormData) =>
     request<{ success: boolean; job: { id: string; totalPrice: number } }>("/api/print-jobs/submit", {
       method: "POST",

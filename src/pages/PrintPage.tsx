@@ -68,10 +68,11 @@ export function PrintPage() {
     void (async () => {
       try {
         const [s, svc] = await Promise.all([api.shopByCode(shopCode), api.printServices()]);
-        setShop(s.shop);
-        setServices(svc.services);
-        if (svc.services.length && !service) {
-          const doc = svc.services.find((x) => x.id === "document") || svc.services[0];
+        setShop(s.shop ?? null);
+        const list = svc.services ?? [];
+        setServices(list);
+        if (list.length && !service) {
+          const doc = list.find((x) => x.id === "document") || list[0];
           setService(doc);
         }
       } catch (e) {

@@ -39,10 +39,10 @@ export function HomePage() {
           api.business(),
           api.settings(),
         ]);
-        setProducts(prod.products);
-        setAddons(prod.addons);
-        setPackages(prod.packages);
-        setServices(svc.services);
+        setProducts(prod.products ?? []);
+        setAddons(prod.addons ?? []);
+        setPackages(prod.packages ?? []);
+        setServices(svc.services ?? []);
         setBusiness(biz);
         setSettings(set.settings);
       } catch (e) {

@@ -11,10 +11,16 @@ export function CustomizePage() {
   const [params] = useSearchParams();
 
   useEffect(() => {
-    void api.products().then((r) => {
-      setProducts(r.products);
-      setAddons(r.addons);
-    });
+    void api
+      .products()
+      .then((r) => {
+        setProducts(r.products ?? []);
+        setAddons(r.addons ?? []);
+      })
+      .catch(() => {
+        setProducts([]);
+        setAddons([]);
+      });
   }, []);
 
   // Prefetch hint for Customize via query — Customize uses first product; we reorder
