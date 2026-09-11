@@ -4,6 +4,7 @@ import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
 import { Product3DViewer } from "../components/Product3DViewer";
 import { api, mediaUrl, type Product } from "../lib/api";
+import { findDefaultProduct } from "../data/defaults";
 import { useCart } from "../lib/cart";
 
 export function ProductDetailPage() {
@@ -22,14 +23,20 @@ export function ProductDetailPage() {
         setColor(p.colors?.[0] || "#1A2A47");
         setSide(p.sides?.[0] || "front");
       })
-      .catch(() => setProduct(null));
+      .catch(() => setProduct(findDefaultProduct(id) ?? null));
   }, [id]);
 
   if (!product) {
     return (
       <div>
         <Navbar />
-        <p className="px-4 py-32 text-center text-navy/50">Loading product…</p>
+        <main className="px-4 py-32 text-center text-navy/50">
+          <p>Product not found.</p>
+          <Link to="/shop" className="mt-4 inline-block text-brand-orange font-semibold">
+            Back to shop
+          </Link>
+        </main>
+        <Footer />
       </div>
     );
   }

@@ -9,6 +9,7 @@ import {
   type EditorLayer,
 } from "./MockupEditor";
 import { api, mediaUrl, type Addon, type Product } from "../lib/api";
+import { DEFAULT_ADDONS, DEFAULT_PRODUCTS } from "../data/defaults";
 import { fadeUp } from "../lib/motion";
 import { useCart } from "../lib/cart";
 
@@ -30,57 +31,10 @@ export function Customize({ products, addons }: Props) {
   const reduceMotion = useReducedMotion();
   const cart = useCart();
   const mockupProducts = useMemo(
-    () =>
-      products.length
-        ? products
-        : ([
-            {
-              id: "round-neck",
-              name: "Round Neck T-Shirt",
-              mockupType: "tshirt" as const,
-              colors: ["#FFFFFF", "#1A2A47", "#000000", "#F37021"],
-              sides: ["front", "back"] as ("front" | "back")[],
-              material: "180 GSM Cotton",
-            },
-            {
-              id: "polo",
-              name: "Polo T-Shirt",
-              mockupType: "polo" as const,
-              colors: ["#FFFFFF", "#1A2A47", "#000000"],
-              sides: ["front", "back"] as ("front" | "back")[],
-              material: "220 GSM Cotton",
-            },
-            {
-              id: "cap",
-              name: "Cap",
-              mockupType: "cap" as const,
-              colors: ["#FFFFFF", "#1A2A47", "#000000", "#F37021"],
-              sides: ["front"] as ("front" | "back")[],
-            },
-            {
-              id: "mug",
-              name: "Ceramic Mug",
-              mockupType: "mug" as const,
-              colors: ["#FFFFFF"],
-              sides: ["front"] as ("front" | "back")[],
-            },
-            {
-              id: "bag",
-              name: "Shopping Bag",
-              mockupType: "bag" as const,
-              colors: ["#FFFFFF", "#1A2A47"],
-              sides: ["front"] as ("front" | "back")[],
-            },
-            {
-              id: "business-card",
-              name: "Business Card",
-              mockupType: "business-card" as const,
-              colors: ["#1A2A47", "#FFFFFF"],
-              sides: ["front", "back"] as ("front" | "back")[],
-            },
-          ] as Product[]),
+    () => (products.length ? products : DEFAULT_PRODUCTS),
     [products]
   );
+  const addonList = addons.length ? addons : DEFAULT_ADDONS;
 
   const [selectedId, setSelectedId] = useState(mockupProducts[0]?.id ?? "round-neck");
   const selected = mockupProducts.find((p) => p.id === selectedId) ?? mockupProducts[0];
@@ -205,15 +159,7 @@ export function Customize({ products, addons }: Props) {
     }
   };
 
-  const apparelAddons = addons.length
-    ? addons
-    : [
-        { id: "glow", name: "Glow in the Dark", priceMin: 100, priceMax: 100, description: "" },
-        { id: "metallic", name: "Metallic / Gold", priceMin: 100, priceMax: 100, description: "" },
-        { id: "puff", name: "Puff (3D)", priceMin: 100, priceMax: 150, description: "" },
-        { id: "embroidery", name: "Embroidery", priceMin: 100, priceMax: 200, description: "" },
-        { id: "name-number", name: "Name & Number", priceMin: 50, priceMax: 100, description: "" },
-      ];
+  const apparelAddons = addonList;
 
   return (
     <section id="customize" className="relative overflow-hidden bg-slate-50 py-20 md:py-28">

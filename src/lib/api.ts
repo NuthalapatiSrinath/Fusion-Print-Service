@@ -1,120 +1,43 @@
+import {
+  DEFAULT_ADDONS,
+  DEFAULT_BUSINESS_INFO,
+  DEFAULT_PACKAGES,
+  DEFAULT_PRINT_SERVICES,
+  DEFAULT_PRODUCTS,
+  DEFAULT_SERVICES,
+  DEFAULT_SHOP_BY_CODE,
+  DEFAULT_SITE_SETTINGS,
+  findDefaultProduct,
+} from "../data/defaults";
+import type {
+  Addon,
+  BusinessInfo,
+  Package,
+  PrintService,
+  Product,
+  Service,
+  ShopPublic,
+  SiteSettings,
+} from "./models";
+
+export type {
+  Addon,
+  BulkTier,
+  BusinessInfo,
+  Package,
+  PriceRange,
+  PrintService,
+  Product,
+  Service,
+  ShopPublic,
+  SiteSettings,
+} from "./models";
+
 const API_BASE = import.meta.env.VITE_API_URL || "";
+const USE_PUBLIC_API =
+  import.meta.env.VITE_USE_API !== "false" && Boolean(API_BASE);
 
-export type PriceRange = { min: number; max: number | null };
-export type BulkTier = {
-  quantity: string;
-  min: number | null;
-  max: number | null;
-  quoteBased?: boolean;
-};
-
-export type Product = {
-  id: string;
-  name: string;
-  slug: string;
-  category: "apparel" | "mockup";
-  material?: string;
-  description: string;
-  individual: {
-    singleSide?: PriceRange;
-    frontBack?: PriceRange;
-    plain?: number;
-    namePrint?: number;
-    photoPrint?: number;
-    logoPrint?: number;
-    printed?: number;
-  };
-  bulk: BulkTier[];
-  recommendedPrice?: number;
-  storePrice?: number;
-  images?: string[];
-  image?: string;
-  stock?: number;
-  active?: boolean;
-  featured?: boolean;
-  mockupType: "tshirt" | "polo" | "cap" | "mug" | "bag" | "business-card";
-  colors: string[];
-  sides: ("front" | "back")[];
-};
-
-export type Addon = {
-  id: string;
-  name: string;
-  priceMin: number;
-  priceMax: number;
-  description: string;
-};
-
-export type Package = {
-  id: string;
-  name: string;
-  description: string;
-  price: number | null;
-  quoteBased: boolean;
-  items: string;
-};
-
-export type Service = {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-};
-
-export type BusinessInfo = {
-  name: string;
-  slogans: string[];
-  proprietor: string;
-  phones: {
-    call: string;
-    callDisplay: string;
-    whatsapp: string;
-    whatsappDisplay: string;
-  };
-  email: string;
-  address: {
-    village: string;
-    mandal: string;
-    district: string;
-    pincode: string;
-    full: string;
-  };
-  footerTaglines: string[];
-  colors: Record<string, string>;
-};
-
-export type PrintService = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  icon: string;
-  basePriceBw: number;
-  basePriceColor: number;
-};
-
-export type ShopPublic = {
-  id: string;
-  name: string;
-  code: string;
-  address?: string;
-  phone?: string;
-  whatsapp?: string;
-  pricing?: { bwPerPage?: number; colorPerPage?: number; duplexSurcharge?: number };
-  qrPath: string;
-  requiresPin?: boolean;
-};
-
-export type SiteSettings = {
-  heroTagline: string;
-  heroHeadline: string;
-  heroSubline: string;
-  phone: string;
-  whatsapp: string;
-  email: string;
-  address: string;
-  featuredProductIds: string[];
-};
+export { DEFAULT_SITE_SETTINGS };
 
 export type ShopPrinter = {
   id: string;
@@ -148,17 +71,17 @@ function asArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? value : [];
 }
 
-export const DEFAULT_SITE_SETTINGS: SiteSettings = {
-  heroTagline: "Your One-Stop Print & Digital Hub",
-  heroHeadline: "FUSION",
-  heroSubline:
-    "Print. Design. Deliver. Custom apparel, QR print, and digital services in Macherla, Armoor.",
-  phone: "9494197969",
-  whatsapp: "7995572200",
-  email: "fusionprintservices@gmail.com",
-  address: "Macherla, Armoor, Nizamabad",
-  featuredProductIds: [],
-};
+function orDefault<T>(value: T[], fallback: T[]): T[] {
+  return value.length > 0 ? value : fallback;
+}
+
+function mergeSettings(partial?: Partial<SiteSettings> | null): SiteSettings {
+  const featured =
+    partial?.featuredProductIds && partial.featuredProductIds.length > 0
+      ? partial.featuredProductIds
+      : DEFAULT_SITE_SETTINGS.featuredProductIds;
+  return { ...DEFAULT_SITE_SETTINGS, ...partial, featuredProductIds: featured };
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -190,28 +113,54 @@ function authHeaders(token: string) {
 export const api = {
   health: () => request<{ status: string }>("/api/health"),
   products: async (featured?: boolean) => {
+    const fallback = {
+      products: featured
+        ? DEFAULT_PRODUCTS.filter((p) => p.featured)
+        : DEFAULT_PRODUCTS,
+      addons: DEFAULT_ADDONS,
+      packages: DEFAULT_PACKAGES,
+    };
+    if (!USE_PUBLIC_API) return fallback;
     const data = await publicGet<Partial<{ products: Product[]; addons: Addon[]; packages: Package[] }>>(
       `/api/products${featured ? "?featured=1" : ""}`,
       {}
     );
     return {
-      products: asArray<Product>(data.products),
-      addons: asArray<Addon>(data.addons),
-      packages: asArray<Package>(data.packages),
+      products: orDefault(asArray<Product>(data.products), fallback.products),
+      addons: orDefault(asArray<Addon>(data.addons), DEFAULT_ADDONS),
+      packages: orDefault(asArray<Package>(data.packages), DEFAULT_PACKAGES),
     };
   },
-  product: (id: string) => request<Product>(`/api/products/${id}`),
-  services: async () => {
-    const data = await publicGet<Partial<{ services: Service[] }>>("/api/products/services", {});
-    return { services: asArray<Service>(data.services) };
+  product: async (id: string) => {
+    const fallback = findDefaultProduct(id);
+    if (!USE_PUBLIC_API) {
+      if (!fallback) throw new Error("Product not found");
+      return fallback;
+    }
+    try {
+      return await request<Product>(`/api/products/${id}`);
+    } catch {
+      if (!fallback) throw new Error("Product not found");
+      return fallback;
+    }
   },
-  business: () => publicGet<BusinessInfo | null>("/api/products/business", null),
+  services: async () => {
+    if (!USE_PUBLIC_API) return { services: DEFAULT_SERVICES };
+    const data = await publicGet<Partial<{ services: Service[] }>>("/api/products/services", {});
+    return { services: orDefault(asArray<Service>(data.services), DEFAULT_SERVICES) };
+  },
+  business: async () => {
+    if (!USE_PUBLIC_API) return DEFAULT_BUSINESS_INFO;
+    const data = await publicGet<BusinessInfo | null>("/api/products/business", null);
+    return data ?? DEFAULT_BUSINESS_INFO;
+  },
   settings: async () => {
+    if (!USE_PUBLIC_API) return { settings: DEFAULT_SITE_SETTINGS };
     const data = await publicGet<Partial<{ settings: SiteSettings }>>(
       "/api/orders/settings/public",
       {}
     );
-    return { settings: data.settings ?? DEFAULT_SITE_SETTINGS };
+    return { settings: mergeSettings(data.settings) };
   },
   quote: (body: {
     productId: string;
@@ -231,14 +180,24 @@ export const api = {
       body: form,
     });
   },
-  shopByCode: (code: string) =>
-    publicGet<{ shop: ShopPublic | null }>(`/api/shops/code/${code}`, { shop: null }),
+  shopByCode: async (code: string) => {
+    const key = code.trim().toLowerCase();
+    const fallback = DEFAULT_SHOP_BY_CODE[key] ?? null;
+    if (!USE_PUBLIC_API) return { shop: fallback };
+    const data = await publicGet<{ shop: ShopPublic | null }>(`/api/shops/code/${code}`, {
+      shop: fallback,
+    });
+    return { shop: data.shop ?? fallback };
+  },
   printServices: async () => {
+    if (!USE_PUBLIC_API) return { services: DEFAULT_PRINT_SERVICES };
     const data = await publicGet<Partial<{ services: PrintService[] }>>(
       "/api/print-jobs/services",
       {}
     );
-    return { services: asArray<PrintService>(data.services) };
+    return {
+      services: orDefault(asArray<PrintService>(data.services), DEFAULT_PRINT_SERVICES),
+    };
   },
   submitPrintJob: async (form: FormData) =>
     request<{ success: boolean; job: { id: string; totalPrice: number } }>("/api/print-jobs/submit", {

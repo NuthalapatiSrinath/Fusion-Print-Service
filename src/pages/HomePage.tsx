@@ -19,6 +19,7 @@ import {
   type Service,
   type SiteSettings,
 } from "../lib/api";
+import { featuredDefaultProducts } from "../data/defaults";
 import { fadeUp } from "../lib/motion";
 
 export function HomePage() {
@@ -54,7 +55,9 @@ export function HomePage() {
   const featured =
     products.filter((p) => p.featured).length > 0
       ? products.filter((p) => p.featured)
-      : products.slice(0, 4);
+      : products.length > 0
+        ? products.slice(0, 4)
+        : featuredDefaultProducts(settings);
 
   return (
     <motion.div
@@ -99,62 +102,26 @@ export function HomePage() {
               </Link>
             </motion.div>
             <div className="flex gap-4 overflow-x-auto pb-2 snap-x">
-              {(featured.length > 0
-                ? featured.map((p) => ({
-                    key: p.id,
-                    to: `/shop/${p.slug || p.id}`,
-                    name: p.name,
-                    price: p.storePrice || p.recommendedPrice,
-                    image: mediaUrl(p.image) || "/images/shop-tshirt-black.png",
-                  }))
-                : [
-                    {
-                      key: "tee",
-                      to: "/shop",
-                      name: "Navy Fusion Tee",
-                      price: 499,
-                      image: "/images/hero-product-tshirt-navy.png",
-                    },
-                    {
-                      key: "polo",
-                      to: "/shop",
-                      name: "White Brand Polo",
-                      price: 699,
-                      image: "/images/hero-product-polo-white.png",
-                    },
-                    {
-                      key: "cap",
-                      to: "/shop",
-                      name: "Navy Cap",
-                      price: 349,
-                      image: "/images/hero-product-cap-navy.png",
-                    },
-                    {
-                      key: "mug",
-                      to: "/shop",
-                      name: "Brand Mug",
-                      price: 249,
-                      image: "/images/shop-mug-white.png",
-                    },
-                  ]
-              ).map((p, i) => (
+              {featured.map((p, i) => (
                 <motion.div
-                  key={p.key}
+                  key={p.id}
                   initial={{ opacity: 0, x: 24 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.08 }}
                   className="w-64 shrink-0 snap-start overflow-hidden rounded-2xl border border-navy/10 bg-white shadow-sm"
                 >
-                  <Link to={p.to}>
+                  <Link to={`/shop/${p.slug || p.id}`}>
                     <img
-                      src={p.image}
+                      src={mediaUrl(p.image) || "/images/shop-tshirt-black.png"}
                       alt={p.name}
                       className="aspect-square w-full object-cover"
                     />
                     <div className="p-3">
                       <p className="font-semibold text-navy">{p.name}</p>
-                      <p className="text-sm text-brand-orange">₹{p.price}</p>
+                      <p className="text-sm text-brand-orange">
+                        ₹{p.storePrice || p.recommendedPrice}
+                      </p>
                     </div>
                   </Link>
                 </motion.div>

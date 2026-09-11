@@ -9,29 +9,8 @@ import {
 } from "framer-motion";
 import { Mail, MapPin, MessageCircle, Phone, type LucideIcon } from "lucide-react";
 import type { BusinessInfo } from "../lib/api";
+import { DEFAULT_BUSINESS_INFO } from "../data/defaults";
 import { fadeUp, staggerContainer } from "../lib/motion";
-
-const defaults: BusinessInfo = {
-  name: "FUSION PRINT & SERVICES",
-  slogans: ["Your One-Stop Print & Digital Hub"],
-  proprietor: "AARE BHAGAVAN",
-  phones: {
-    call: "9494197969",
-    callDisplay: "94941 97969",
-    whatsapp: "7995572200",
-    whatsappDisplay: "79955 72200",
-  },
-  email: "fusionprintservices@gmail.com",
-  address: {
-    village: "Macherla",
-    mandal: "Armoor",
-    district: "Nizamabad",
-    pincode: "503224",
-    full: "Village: Macherla, Mandal: Armoor, District: Nizamabad, Pincode: 503224",
-  },
-  footerTaglines: [],
-  colors: {},
-};
 
 type Props = { business?: BusinessInfo | null };
 
@@ -51,7 +30,7 @@ type Channel = {
 };
 
 export function Contact({ business }: Props) {
-  const b = business || defaults;
+  const b = business || DEFAULT_BUSINESS_INFO;
   const reduceMotion = useReducedMotion();
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${b.address.village}, ${b.address.mandal}, ${b.address.district} ${b.address.pincode}`,

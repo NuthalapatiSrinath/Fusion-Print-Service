@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { Addon, Package, Product } from "../lib/api";
+import { DEFAULT_ADDONS, DEFAULT_PACKAGES, DEFAULT_PRODUCTS } from "../data/defaults";
 import { fadeUp, staggerContainer } from "../lib/motion";
 
 type Props = {
@@ -18,79 +19,9 @@ export function Pricing({ products, packages, addons }: Props) {
   const reduceMotion = useReducedMotion();
   const apparel = products.filter((p) => p.category === "apparel");
   const fallbackApparel =
-    apparel.length > 0
-      ? apparel
-      : ([
-          {
-            id: "round-neck",
-            name: "Round Neck T-Shirt",
-            material: "180 GSM Cotton",
-            individual: { singleSide: { min: 299, max: 349 }, frontBack: { min: 399, max: 499 } },
-            bulk: [
-              { quantity: "10-25", min: 250, max: 280 },
-              { quantity: "26-50", min: 230, max: 260 },
-              { quantity: "51-100", min: 210, max: 240 },
-              { quantity: "100+", min: null, max: null, quoteBased: true },
-            ],
-            recommendedPrice: 299,
-          },
-          {
-            id: "polo",
-            name: "Polo T-Shirt",
-            material: "220 GSM Cotton",
-            individual: { singleSide: { min: 399, max: 499 }, frontBack: { min: 499, max: 599 } },
-            bulk: [
-              { quantity: "10-25", min: 350, max: 400 },
-              { quantity: "26-50", min: 330, max: 380 },
-              { quantity: "51-100", min: 300, max: 350 },
-              { quantity: "100+", min: null, max: null, quoteBased: true },
-            ],
-            recommendedPrice: 449,
-          },
-          {
-            id: "cap",
-            name: "Cap",
-            material: "Cotton Cap",
-            individual: { singleSide: { min: 249, max: 299 }, frontBack: { min: 299, max: 349 } },
-            bulk: [
-              { quantity: "10-25", min: 200, max: 220 },
-              { quantity: "26-50", min: 180, max: 200 },
-              { quantity: "51-100", min: 170, max: 190 },
-              { quantity: "100+", min: null, max: null, quoteBased: true },
-            ],
-            recommendedPrice: 249,
-          },
-        ] as Product[]);
-
-  const pkgs =
-    packages.length > 0
-      ? packages
-      : [
-          {
-            id: "birthday",
-            name: "Birthday Package",
-            description: "Celebrations",
-            price: 2499,
-            quoteBased: false,
-            items: "10 Printed T-Shirts",
-          },
-          {
-            id: "school",
-            name: "School Package",
-            description: "Uniforms",
-            price: null,
-            quoteBased: true,
-            items: "50 Uniform T-Shirts",
-          },
-          {
-            id: "corporate",
-            name: "Corporate Package",
-            description: "Team branding",
-            price: null,
-            quoteBased: true,
-            items: "100 Polo T-Shirts with Logo",
-          },
-        ];
+    apparel.length > 0 ? apparel : DEFAULT_PRODUCTS.filter((p) => p.category === "apparel");
+  const pkgs = packages.length > 0 ? packages : DEFAULT_PACKAGES;
+  const addonList = addons.length > 0 ? addons : DEFAULT_ADDONS;
 
   return (
     <section id="pricing" className="py-20 md:py-28 bg-white">
@@ -199,16 +130,7 @@ export function Pricing({ products, packages, addons }: Props) {
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
           <h3 className="font-display text-xl font-bold text-navy mb-4">Premium Add-ons</h3>
           <div className="flex flex-wrap gap-2">
-            {(addons.length
-              ? addons
-              : [
-                  { id: "1", name: "Glow in the Dark", priceMin: 100, priceMax: 100 },
-                  { id: "2", name: "Metallic / Gold", priceMin: 100, priceMax: 100 },
-                  { id: "3", name: "Puff (3D)", priceMin: 100, priceMax: 150 },
-                  { id: "4", name: "Embroidery", priceMin: 100, priceMax: 200 },
-                  { id: "5", name: "Name & Number", priceMin: 50, priceMax: 100 },
-                ]
-            ).map((a) => (
+            {addonList.map((a) => (
               <motion.span
                 key={a.id}
                 whileHover={reduceMotion ? undefined : { scale: 1.05 }}

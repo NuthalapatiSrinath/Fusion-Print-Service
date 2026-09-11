@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { Service } from "../lib/api";
+import { DEFAULT_SERVICES } from "../data/defaults";
 import {
   Shirt,
   Printer,
@@ -32,25 +33,10 @@ const iconMap: Record<string, LucideIcon> = {
   banner: PaintBucket,
 };
 
-const fallbackServices: Service[] = [
-  { id: "tshirt", name: "T-Shirt Printing", icon: "shirt", description: "Custom apparel printing." },
-  { id: "printing", name: "Color Printing & Xerox", icon: "printer", description: "Color and B&W prints." },
-  { id: "lamination", name: "Lamination & Binding", icon: "layers", description: "Finish & protect docs." },
-  { id: "passport-photo", name: "Passport Photo & Editing", icon: "camera", description: "Compliant photos." },
-  { id: "pan", name: "PAN Card Services", icon: "id-card", description: "PAN application help." },
-  { id: "passport-appt", name: "Passport Appointment", icon: "passport", description: "Booking assistance." },
-  { id: "exam", name: "Exam & Online Applications", icon: "laptop", description: "Forms & submissions." },
-  { id: "scanning", name: "Scanning & Upload", icon: "scan", description: "Digitize documents." },
-  { id: "id-card", name: "ID Card Printing", icon: "badge", description: "Custom ID cards." },
-  { id: "design", name: "Designing Services", icon: "pen-tool", description: "Logos & print design." },
-  { id: "stationery", name: "Spiral Binding & Stationery", icon: "book", description: "Binding & supplies." },
-  { id: "flex", name: "Flex & Banner Printing", icon: "banner", description: "Large-format print." },
-];
-
 type Props = { services?: Service[] };
 
 export function Services({ services }: Props) {
-  const list = services?.length ? services : fallbackServices;
+  const list = services?.length ? services : DEFAULT_SERVICES;
   const reduceMotion = useReducedMotion();
 
   return (

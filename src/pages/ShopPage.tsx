@@ -24,14 +24,10 @@ export function ShopPage() {
         <div className="mb-10">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand-orange">Store</p>
           <h1 className="font-display text-3xl font-bold text-navy md:text-4xl">Shop products</h1>
-          <p className="mt-2 text-navy/60">Live catalog & pricing from admin — customize any item in 3D.</p>
-        </div>
-        {products.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-navy/15 bg-slate-50 px-6 py-12 text-center text-navy/55">
-            Catalog is loading from the server. If this stays empty, set{" "}
-            <code className="text-sm">VITE_API_URL</code> in Coolify to your API origin.
+          <p className="mt-2 text-navy/60">
+            Round neck, polo, caps &amp; more — customize any item in 3D.
           </p>
-        ) : null}
+        </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((p, i) => (
             <motion.article
